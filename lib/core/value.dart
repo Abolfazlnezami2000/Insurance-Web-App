@@ -1,3 +1,3 @@
-class Value{
+class Authentication{
   static String token = '';
 }

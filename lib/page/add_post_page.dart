@@ -1,74 +1,64 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:crypto/crypto.dart';
-import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sample_site_with_php_api/model/mode/user_response_model.dart';
+import 'package:sample_site_with_php_api/model/mode/post_response_model.dart';
 import 'package:sample_site_with_php_api/model/remote_data_source.dart';
 import 'package:sample_site_with_php_api/widget/app_bar_widget.dart';
 import 'package:sample_site_with_php_api/widget/textfiled_widget.dart';
 
-class CraeteUser extends StatefulWidget {
+class AddPostPage extends StatefulWidget {
   final bool isAdmin;
-  final UserResponseModel? data;
+  final PostResponseModel? data;
 
-  const CraeteUser({Key? key, required this.isAdmin, this.data})
+  const AddPostPage({Key? key, required this.isAdmin, this.data})
       : super(key: key);
 
   @override
-  State<CraeteUser> createState() => _CraeteUserState();
+  State<AddPostPage> createState() => _AddPostPageState();
 }
 
-class _CraeteUserState extends State<CraeteUser> {
+class _AddPostPageState extends State<AddPostPage> {
   final formKey = GlobalKey<FormState>();
-
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _categoryController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
 
-  final fullNameController = TextEditingController();
-
-  final _passwordController = TextEditingController();
-
-  final _passwordAgianController = TextEditingController();
-
-  String _email = '';
-
-  String _fullName = '';
-
-  String _password = '';
-
-  String _passwordAgain = '';
+  String title = '';
+  String price = '';
+  String category = '';
+  String description = '';
 
   String imageText = 'Upload Image +';
   String imageBase64 = '';
 
   void _submitCommand() {
     final form = formKey.currentState;
-    var password = utf8.encode(_passwordController.text);
-    String hashPassword = sha256.convert(password).toString();
     if (form!.validate()) {
       if (imageBase64.isNotEmpty) {
         if (widget.data != null) {
-          editUser(id: widget.data!.id,
-              username: fullNameController.text,
-              password: hashPassword,
-              email: _emailController.text,
+          editPost(id: widget.data!.id,
+              title: _titleController.text,
+              price: _priceController.text,
+              category: _categoryController.text,
+              description: _descriptionController.text,
               imagePath: imageText,
-              date: DateTime.now().toString(),
               image: imageBase64);
+          Get.snackbar("Message", "Post edit Successfully");
         } else {
-          createUser(
-              username: fullNameController.text,
-              password: hashPassword,
-              email: _emailController.text,
+          createPost(
+              title: _titleController.text,
+              price: _priceController.text,
+              category: _categoryController.text,
+              description: _descriptionController.text,
               imagePath: imageText,
-              date: DateTime.now().toString(),
               image: imageBase64);
-          Get.snackbar("Message", "User create Successfully");
+          Get.snackbar("Message", "Post create Successfully");
         }
       } else {
         Get.snackbar("Error", "image not valid");
@@ -79,8 +69,10 @@ class _CraeteUserState extends State<CraeteUser> {
   @override
   void initState() {
     if (widget.data != null) {
-      _emailController.text = widget.data!.email;
-      fullNameController.text = widget.data!.username;
+      _titleController.text = widget.data!.title;
+      _priceController.text = widget.data!.price;
+      _categoryController.text = widget.data!.category;
+      _descriptionController.text = widget.data!.description;
     }
     super.initState();
   }
@@ -115,64 +107,53 @@ class _CraeteUserState extends State<CraeteUser> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const Text(
-                        'Create User',
+                        'Create Post',
                         style: TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
                             color: Colors.black),
                       ),
                       textField(
-                        text: "Please Enter Email Address",
-                        value: _email,
-                        controller: _emailController,
+                        text: "Please Enter Title",
+                        value: title,
+                        controller: _titleController,
                         validator: (val) {
-                          if (!EmailValidator.validate(val!, true)) {
-                            return 'Not a valid email.';
+                          if (val!.length > 30) {
+                            return 'Not a valid title.';
                           } else if (val.isEmpty) {
                             return "Please enter value";
                           }
                         },
                       ),
                       textField(
-                        text: "Please Enter Username",
-                        value: _fullName,
-                        controller: fullNameController,
+                        text: "Please Enter Price",
+                        value: price,
+                        controller: _priceController,
                         validator: (val) {
                           if (val!.isEmpty) {
                             return 'Please enter value';
-                          } else if (val.length <= 5) {
-                            return "Full name too short..";
+                          } else if (int.tryParse(val) == null) {
+                            return 'Please enter only number';
                           }
                         },
                       ),
                       textField(
-                        text: "Please Enter your password",
-                        value: _password,
-                        controller: _passwordController,
+                        text: "Please Enter category",
+                        value: category,
+                        controller: _categoryController,
                         validator: (val) {
-                          bool passValid = RegExp(
-                              "^(?=.{8,32}\$)(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#\$%^&*(),.?:{}|<>]).*")
-                              .hasMatch(val ?? "");
                           if (val == null) {
                             return 'please fill field';
-                          } else if (val.length < 8) {
-                            return 'min 8 word';
-                          } else if (val.length > 12) {
-                            return 'max 12 word';
-                          } else if (!passValid) {
-                            return 'not valid password';
                           }
                         },
                       ),
                       textField(
-                        text: "Please Enter your password Again",
-                        value: _passwordAgain,
-                        controller: _passwordAgianController,
+                        text: "Please Enter description",
+                        value: description,
+                        controller: _descriptionController,
                         validator: (val) {
                           if (val == null) {
                             return 'please fill field';
-                          } else if (val != _passwordController.text) {
-                            return "password is not equal";
                           }
                         },
                       ),

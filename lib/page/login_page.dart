@@ -1,22 +1,27 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:sample_site_with_php_api/page/database_page.dart';
+import 'package:sample_site_with_php_api/core/value.dart';
+import 'package:sample_site_with_php_api/model/mode/admin_model.dart';
+import 'package:sample_site_with_php_api/model/remote_data_source.dart';
+import 'package:sample_site_with_php_api/page/admin_page.dart';
 import 'package:sample_site_with_php_api/widget/app_bar_widget.dart';
+import 'package:uuid/uuid.dart';
 
 import 'add_user_page.dart';
 
-class AdminPage extends StatefulWidget {
-  const AdminPage({Key? key}) : super(key: key);
+class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key}) : super(key: key);
 
   @override
-  _AdminPageState createState() => _AdminPageState();
+  _LoginPageState createState() => _LoginPageState();
 }
 
-class _AdminPageState extends State<AdminPage> {
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -56,14 +61,16 @@ class _AdminPageState extends State<AdminPage> {
                         border: Border.all(
                           color: Colors.blueAccent,
                         ),
-                        borderRadius: const BorderRadius.all(Radius.circular(20)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(20)),
                       ),
                       child: TextFormField(
                         controller: _usernameController,
                         decoration: const InputDecoration(
                           contentPadding: EdgeInsets.all(10),
                           hintText: "Username",
-                          hintStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          hintStyle: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold),
                           border: InputBorder.none,
                           focusedBorder: InputBorder.none,
                           enabledBorder: InputBorder.none,
@@ -78,14 +85,16 @@ class _AdminPageState extends State<AdminPage> {
                         border: Border.all(
                           color: Colors.blueAccent,
                         ),
-                        borderRadius: const BorderRadius.all(Radius.circular(20)),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(20)),
                       ),
                       child: TextFormField(
                         controller: _passwordController,
                         decoration: const InputDecoration(
                           contentPadding: EdgeInsets.all(10),
                           hintText: "Password",
-                          hintStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          hintStyle: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold),
                           border: InputBorder.none,
                           focusedBorder: InputBorder.none,
                           enabledBorder: InputBorder.none,
@@ -95,7 +104,7 @@ class _AdminPageState extends State<AdminPage> {
                       ),
                     ),
                     InkWell(
-                      onTap: ()=> _submitCommand(),
+                      onTap: () => _submitCommand(),
                       child: Container(
                         height: 40,
                         width: 200,
@@ -115,7 +124,7 @@ class _AdminPageState extends State<AdminPage> {
                       ),
                     ),
                     InkWell(
-                      onTap: () => Get.to(CraeteUser()),
+                      onTap: () => Get.to(CraeteUser(isAdmin: false)),
                       child: Container(
                         margin: EdgeInsets.symmetric(vertical: 10),
                         child: Text("Sign up"),
@@ -131,13 +140,23 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
-  void _submitCommand(){
-    if(_usernameController.text == 'admin' && _passwordController.text == 'admin'){
-      Get.to(const DatabasePage());
-    }else{
+  void _submitCommand() {
+    try{
+      getAdminData(action: (List<AdminResponse> response) {
+        var password = utf8.encode(_passwordController.text);
+        String hashPassword = sha256.convert(password).toString();
+        AdminResponse? exist = response.firstWhere((element) =>
+        _usernameController.text == element.username &&
+            hashPassword == element.password);
+        if (exist != null) {
+          Authentication.token = const Uuid().v1();
+          Get.to(const AdminPage());
+        } else {
+          Get.snackbar("Error", "Error");
+        }
+      });
+    }catch(e){
       Get.snackbar("Error", "Error");
     }
   }
-
-
 }

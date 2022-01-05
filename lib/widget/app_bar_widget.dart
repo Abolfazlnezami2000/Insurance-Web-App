@@ -13,7 +13,7 @@ Widget appBar() => Row(
           width: 100,
           child: Center(
               child: IconButton(
-                  onPressed: () =>Get.to(const AdminPage()),
+                  onPressed: () =>Get.to(const LoginPage()),
                   icon: const Icon(
                     Icons.account_circle,
                     size: 30,
