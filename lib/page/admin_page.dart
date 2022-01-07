@@ -9,6 +9,7 @@ import 'package:sample_site_with_php_api/model/mode/user_response_model.dart';
 import 'package:sample_site_with_php_api/model/remote_data_source.dart';
 import 'package:sample_site_with_php_api/page/add_post_page.dart';
 import 'package:sample_site_with_php_api/page/add_user_page.dart';
+import 'package:sample_site_with_php_api/page/post_detial_page.dart';
 import 'package:sample_site_with_php_api/widget/app_bar_widget.dart';
 import 'package:get/get.dart';
 
@@ -317,8 +318,14 @@ class _AdminPageState extends State<AdminPage> {
             Text(postData[index].category + "  "),
             const Text(" | "),
             Expanded(
-                child: Text("Description : " + postData[index].category + "  ",
+                child: Text("Description : " + postData[index].description + "  ",
                     overflow: TextOverflow.ellipsis)),
+            IconButton(
+                onPressed: () => Get.to(PostDetialPage(isAdmin: true,data: postData[index])),
+                icon: const Icon(
+                  Icons.remove_red_eye,
+                  color: Colors.blueAccent,
+                )),
             IconButton(
                 onPressed: () => Get.to(AddPostPage(isAdmin: true,data: postData[index])),
                 icon: const Icon(
